@@ -1,14 +1,19 @@
-pub fn add(left: u64, right: u64) -> u64 {
-    left + right
+pub mod tile;
+pub use tile::*;
+pub mod level;
+pub use level::*;
+pub mod event;
+pub use event::*;
+
+const fn deg2rad(deg: f64) -> f64 {
+    deg / 180.0 * std::f64::consts::PI
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
+pub const fn bpm2crotchet(bpm: f64) -> f64 {
+    60.0 / bpm
+}
 
-    #[test]
-    fn it_works() {
-        let result = add(2, 2);
-        assert_eq!(result, 4);
-    }
+pub const fn bpm2mspb(bpm: f64) -> f64 {
+    // 60.0 / bpm * 1000.0
+    60000.0 / bpm
 }

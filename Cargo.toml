@@ -4,3 +4,8 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+serde = { version = "1.0", features = ["derive"] }
+serde_json_lenient = "0.2"
+strip_bom = "1.0"
+vector2d = "3.1"
+getset = "0.1"
