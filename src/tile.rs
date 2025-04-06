@@ -1,6 +1,23 @@
 use crate::*;
 use getset::*;
+use rgb::Rgba;
+use serde::Serialize;
 use vector2d::Vector2D;
+
+#[derive(Debug, Clone, Copy, Serialize)]
+pub enum TrackStyle {
+    Standard,
+    Neon,
+    NeonLight,
+    Basic,
+    Minimal,
+    Gems,
+}
+impl Default for TrackStyle {
+    fn default() -> Self {
+        TrackStyle::Standard
+    }
+}
 
 #[derive(Debug, Default, Clone, Copy)]
 pub struct BeatValue<T> {
@@ -28,19 +45,23 @@ impl Orbit {
 }
 
 #[derive(Default, Debug, Clone, Copy, Getters, CopyGetters, MutGetters, Setters, WithSetters)]
+#[getset(get = "pub")]
 pub struct TileData {
-    #[getset(get = "pub")]
     pub(crate) orbit: Option<Orbit>,
-    #[getset(get = "pub")]
     pub(crate) beat: Option<f64>,
-    #[getset(get = "pub")]
     pub(crate) ms: Option<f64>,
-    #[getset(get = "pub")]
+    pub(crate) stick_to_floors: Option<bool>,
+    pub(crate) editor_position: Option<Vector2D<f64>>,
     pub(crate) radius_scale: Option<f64>,
-    #[getset(get = "pub")]
+
+    // BeatValues
     pub(crate) position: BeatValue<Vector2D<f64>>,
-    #[getset(get = "pub")]
-    pub(crate) editor_position: BeatValue<Vector2D<f64>>,
+
+    pub(crate) rotation: BeatValue<f64>,
+
+    pub(crate) color: BeatValue<Rgba<u8>>,
+    pub(crate) secondary_color: BeatValue<Rgba<u8>>,
+    pub(crate) style: BeatValue<TrackStyle>,
 }
 
 #[derive(Default, Debug)]

@@ -121,10 +121,7 @@ impl Level {
             orig: Some(Default::default()),
             now: None,
         };
-        tiles[0].tile_data.editor_position = BeatValue {
-            orig: Some(Default::default()),
-            now: None,
-        };
+        tiles[0].tile_data.editor_position = Some(Default::default());
         for i in 0..length {
             if i != 0 {
                 tiles[i].tile_data = tiles[i - 1].tile_data.clone();
@@ -171,7 +168,7 @@ impl Level {
                     let vec2d =
                         Vector2D::new(cos, sin) * tiles[i].tile_data.radius_scale.unwrap() / 100.0;
                     *tiles[i].tile_data.position.orig.as_mut().unwrap() += vec2d;
-                    *tiles[i].tile_data.editor_position.orig.as_mut().unwrap() += vec2d;
+                    *tiles[i].tile_data.editor_position.as_mut().unwrap() += vec2d;
                 }
             }
         }
