@@ -187,7 +187,7 @@ pub struct Camera {
     last_floor: usize,
     last_change_pos: Vector2D<f64>,
     last_event_index: usize,
-    v: Vec<Vector2D<f64>>
+    // v: Vec<Vector2D<f64>>
 }
 impl Default for Camera {
     fn default() -> Self {
@@ -200,7 +200,7 @@ impl Default for Camera {
             last_floor: 0,
             last_change_pos: Vector2D::new(0.0, 0.0),
             last_event_index: 0,
-            v: vec![]
+            // v: vec![]
         }
     }
 }

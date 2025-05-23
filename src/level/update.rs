@@ -22,10 +22,10 @@ impl Level {
             else {
                 unreachable!()
             };
-            let _ = event
+            event
                 .clone()
                 .apply(
-                    (event.floor(), beats.unwrap(), e_seconds.unwrap(), None),
+                    (beats.unwrap(), e_seconds.unwrap()),
                     self,
                     seconds,
                 )

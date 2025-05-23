@@ -1,9 +1,9 @@
 use crate::*;
 use event::*;
-use serde::{ser::{SerializeMap, SerializeSeq}, Deserialize, Deserializer, Serialize, Serializer};
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
 impl Serialize for Level {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    fn serialize<S>(&self, _serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
     {

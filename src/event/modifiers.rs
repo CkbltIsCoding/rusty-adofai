@@ -34,7 +34,7 @@ impl Event for RepeatEvents {
 impl DynamicEvent for RepeatEvents {
     fn apply(
         &self,
-        _data: (usize, f64, f64, Option<Vec<String>>),
+        _data: (f64, f64),
         _level: &mut Level,
         _seconds: f64,
     ) -> Result<(), Box<dyn error::Error>> {

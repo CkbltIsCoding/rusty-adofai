@@ -27,7 +27,7 @@ pub trait StaticEvent: Event {
 pub trait DynamicEvent: Event {
     fn apply(
         &self,
-        data: (usize, f64, f64, Option<Vec<String>>),
+        data: (f64, f64),
         level: &mut Level,
         seconds: f64,
     ) -> Result<(), Box<dyn error::Error>>;
@@ -36,8 +36,6 @@ pub trait DynamicEvent: Event {
     fn event_tag(&self) -> Option<&Vec<String>>;
     fn event_tag_mut(&mut self) -> Option<&mut Vec<String>>;
 }
-
-// pub struct
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(untagged)]
@@ -240,7 +238,7 @@ impl Event for DynamicEvents {
 impl DynamicEvent for DynamicEvents {
     fn apply(
         &self,
-        data: (usize, f64, f64, Option<Vec<String>>),
+        data: (f64, f64),
         level: &mut Level,
         seconds: f64,
     ) -> Result<(), Box<dyn error::Error>> {

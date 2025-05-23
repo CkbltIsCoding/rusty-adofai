@@ -80,19 +80,19 @@ impl DynamicEvent for RecolorTrack {
     }
     fn apply(
         &self,
-        data: (usize, f64, f64, Option<Vec<String>>),
+        data: (f64, f64),
         level: &mut Level,
         seconds: f64,
     ) -> Result<(), Box<dyn error::Error>> {
-        let (e_floor, _e_beats, e_seconds, _tags) = data;
+        let (_e_beats, e_seconds) = data;
         if seconds < e_seconds {
             return Ok(());
         }
         // let bpm = level.get_bpm_by_seconds(e_seconds)?;
-        let bpm = level.get_bpm_by_floor_seconds(e_floor, e_seconds)?;
+        let bpm = level.get_bpm_by_floor_seconds(self.floor, e_seconds)?;
         let spb = bpm2crotchet(bpm);
-        let start = self.start_tile.calc(e_floor, level.tiles.len() - 1);
-        let end = self.end_tile.calc(e_floor, level.tiles.len() - 1);
+        let start = self.start_tile.calc(self.floor, level.tiles.len() - 1);
+        let end = self.end_tile.calc(self.floor, level.tiles.len() - 1);
         for f in start..=end.min(level.tiles.len() - 1) {
             if seconds < e_seconds + (f as f64 * self.gap_length as f64) * spb {
                 return Ok(());
@@ -166,13 +166,13 @@ impl DynamicEvent for MoveTrack {
     }
     fn apply(
         &self,
-        data: (usize, f64, f64, Option<Vec<String>>),
+        data: (f64, f64),
         level: &mut Level,
         seconds: f64,
     ) -> Result<(), Box<dyn error::Error>> {
-        let (e_floor, _e_beats, e_seconds, _tags) = data;
+        let (_e_beats, e_seconds) = data;
         // let bpm = level.get_bpm_by_seconds(e_seconds)?;
-        let bpm = level.get_bpm_by_floor_seconds(e_floor, e_seconds)?;
+        let bpm = level.get_bpm_by_floor_seconds(self.floor, e_seconds)?;
         let spb = bpm2crotchet(bpm);
         let (x, y);
         if seconds < e_seconds {
@@ -186,8 +186,8 @@ impl DynamicEvent for MoveTrack {
             y = self.ease.calc(x);
         }
 
-        let start = self.start_tile.calc(e_floor, level.tiles.len() - 1);
-        let end = self.end_tile.calc(e_floor, level.tiles.len() - 1);
+        let start = self.start_tile.calc(self.floor, level.tiles.len() - 1);
+        let end = self.end_tile.calc(self.floor, level.tiles.len() - 1);
         for f in start..=end.min(level.tiles.len() - 1) {
             let data = &mut level.tiles[f].data;
             let now_position = data.position.now.as_mut().unwrap();
