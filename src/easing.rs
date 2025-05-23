@@ -150,7 +150,7 @@ impl Easing {
     }
 }
 
-fn out_bounce(mut x: f64) -> f64 {
+const fn out_bounce(mut x: f64) -> f64 {
     if x < 1.0 / D1 {
         N1 * x * x
     } else if x < 2.0 / D1 {

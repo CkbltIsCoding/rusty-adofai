@@ -3,7 +3,7 @@ use serde_json_lenient::Value;
 use vector2d::Vector2D;
 use rgb::Rgba;
 
-pub(crate) fn serialize_rgba_u8<S>(rgba: &Rgba<u8>, s: S) -> Result<S::Ok, S::Error>
+pub(crate) fn ser_rgba_u8<S>(rgba: &Rgba<u8>, s: S) -> Result<S::Ok, S::Error>
 where
     S: Serializer,
 {
@@ -14,7 +14,7 @@ where
     };
     s.serialize_str(&string)
 }
-pub(crate) fn deserialize_rgba_u8<'de, D>(de: D) -> Result<Rgba<u8>, D::Error>
+pub(crate) fn de_rgba_u8<'de, D>(de: D) -> Result<Rgba<u8>, D::Error>
 where
     D: Deserializer<'de>,
 {
@@ -35,7 +35,7 @@ where
         a: (color % 0x100) as u8,
     })
 }
-pub(crate) fn deserialize_bool<'de, D>(de: D) -> Result<bool, D::Error>
+pub(crate) fn de_bool<'de, D>(de: D) -> Result<bool, D::Error>
 where
     D: Deserializer<'de>,
 {
@@ -47,13 +47,13 @@ where
         _ => Err(serde::de::Error::custom("Unexpected value")),
     }
 }
-pub(crate) fn serialize_vector2d_f64<S>(v: &Vector2D<f64>, s: S) -> Result<S::Ok, S::Error>
+pub(crate) fn ser_vector2d_f64<S>(v: &Vector2D<f64>, s: S) -> Result<S::Ok, S::Error>
 where
     S: Serializer,
 {
     s.collect_seq([v.x, v.y])
 }
-pub(crate) fn deserialize_vector2d_f64<'de, D>(de: D) -> Result<Vector2D<f64>, D::Error>
+pub(crate) fn de_vector2d_f64<'de, D>(de: D) -> Result<Vector2D<f64>, D::Error>
 where
     D: Deserializer<'de>,
 {
@@ -63,13 +63,13 @@ where
     let y = array[1].as_f64().ok_or(serde::de::Error::custom(""))?;
     Ok(Vector2D { x, y })
 }
-pub(crate) fn serialize_vector2d_option_f64<S>(v: &Vector2D<Option<f64>>, s: S) -> Result<S::Ok, S::Error>
+pub(crate) fn ser_vector2d_option_f64<S>(v: &Vector2D<Option<f64>>, s: S) -> Result<S::Ok, S::Error>
 where
     S: Serializer,
 {
     s.collect_seq([v.x, v.y])
 }
-pub(crate) fn deserialize_vector2d_option_f64<'de, D>(de: D) -> Result<Vector2D<Option<f64>>, D::Error>
+pub(crate) fn de_vector2d_option_f64<'de, D>(de: D) -> Result<Vector2D<Option<f64>>, D::Error>
 where
     D: Deserializer<'de>,
 {
@@ -87,13 +87,13 @@ where
     }?;
     Ok(Vector2D { x, y })
 }
-pub(crate) fn serialize_repeat_events_tag<S>(v: &Vec<String>, s: S) -> Result<S::Ok, S::Error>
+pub(crate) fn ser_event_tag<S>(v: &Vec<String>, s: S) -> Result<S::Ok, S::Error>
 where
     S: Serializer,
 {
     s.serialize_str(&v.join(" "))
 }
-pub(crate) fn deserialize_repeat_events_tag<'de, D>(de: D) -> Result<Vec<String>, D::Error>
+pub(crate) fn de_event_tag<'de, D>(de: D) -> Result<Vec<String>, D::Error>
 where
     D: Deserializer<'de>,
 {

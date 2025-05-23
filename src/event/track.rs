@@ -8,23 +8,28 @@ use vector2d::Vector2D;
 #[derive(Debug, Clone, Copy, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct ColorTrack {
+    pub floor: usize,
     pub track_color_type: TrackColorType,
-    #[serde(
-        serialize_with = "serialize_rgba_u8",
-        deserialize_with = "deserialize_rgba_u8"
-    )]
+    #[serde(serialize_with = "ser_rgba_u8", deserialize_with = "de_rgba_u8")]
     pub track_color: Rgba<u8>,
-    #[serde(
-        serialize_with = "serialize_rgba_u8",
-        deserialize_with = "deserialize_rgba_u8"
-    )]
+    #[serde(serialize_with = "ser_rgba_u8", deserialize_with = "de_rgba_u8")]
     pub secondary_track_color: Rgba<u8>,
     pub track_color_anim_duration: f64,
     pub track_color_pulse: TrackColorPulse,
     pub track_pulse_length: u32,
     pub track_style: TrackStyle,
 }
-impl Event for ColorTrack {}
+impl Event for ColorTrack {
+    fn floor(&self) -> usize {
+        self.floor
+    }
+    fn floor_mut(&mut self) -> &mut usize {
+        &mut self.floor
+    }
+    fn set_floor(&mut self, new_floor: usize) {
+        self.floor = new_floor
+    }
+}
 impl StaticEvent for ColorTrack {
     fn apply(&self, data: &mut TileData) {
         data.color_type.orig = Some(self.track_color_type);
@@ -37,31 +42,38 @@ impl StaticEvent for ColorTrack {
     }
 }
 
-#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct RecolorTrack {
+    pub floor: usize,
+    #[serde(serialize_with = "ser_event_tag", deserialize_with = "de_event_tag")]
+    pub event_tag: Vec<String>,
     pub angle_offset: f64,
     pub start_tile: RelativeIndex,
     pub end_tile: RelativeIndex,
     #[serde(default)]
     pub gap_length: u32,
     pub track_color_type: TrackColorType,
-    #[serde(
-        serialize_with = "serialize_rgba_u8",
-        deserialize_with = "deserialize_rgba_u8"
-    )]
+    #[serde(serialize_with = "ser_rgba_u8", deserialize_with = "de_rgba_u8")]
     pub track_color: Rgba<u8>,
-    #[serde(
-        serialize_with = "serialize_rgba_u8",
-        deserialize_with = "deserialize_rgba_u8"
-    )]
+    #[serde(serialize_with = "ser_rgba_u8", deserialize_with = "de_rgba_u8")]
     pub secondary_track_color: Rgba<u8>,
     pub track_color_anim_duration: f64,
     pub track_color_pulse: TrackColorPulse,
     pub track_pulse_length: u32,
     pub track_style: TrackStyle,
 }
-impl Event for RecolorTrack {}
+impl Event for RecolorTrack {
+    fn floor(&self) -> usize {
+        self.floor
+    }
+    fn floor_mut(&mut self) -> &mut usize {
+        &mut self.floor
+    }
+    fn set_floor(&mut self, new_floor: usize) {
+        self.floor = new_floor
+    }
+}
 impl DynamicEvent for RecolorTrack {
     fn angle_offset(&self) -> f64 {
         self.angle_offset
@@ -96,11 +108,23 @@ impl DynamicEvent for RecolorTrack {
         }
         Ok(())
     }
+    fn has_event_tag() -> bool {
+        true
+    }
+    fn event_tag(&self) -> Option<&Vec<String>> {
+        Some(&self.event_tag)
+    }
+    fn event_tag_mut(&mut self) -> Option<&mut Vec<String>> {
+        Some(&mut self.event_tag)
+    }
 }
 
-#[derive(Debug, Clone, Copy, Serialize, Deserialize)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct MoveTrack {
+    pub floor: usize,
+    #[serde(serialize_with = "ser_event_tag", deserialize_with = "de_event_tag")]
+    pub event_tag: Vec<String>,
     #[serde(default)]
     pub angle_offset: f64,
     pub start_tile: RelativeIndex,
@@ -109,23 +133,33 @@ pub struct MoveTrack {
     pub gap_length: f64,
     pub duration: f64,
     #[serde(
-        serialize_with = "serialize_vector2d_option_f64",
-        deserialize_with = "deserialize_vector2d_option_f64"
+        serialize_with = "ser_vector2d_option_f64",
+        deserialize_with = "de_vector2d_option_f64"
     )]
     pub position_offset: Vector2D<Option<f64>>,
     #[serde(default)]
     pub rotation_offset: Option<f64>,
     #[serde(
         default,
-        serialize_with = "serialize_vector2d_option_f64",
-        deserialize_with = "deserialize_vector2d_option_f64"
+        serialize_with = "ser_vector2d_option_f64",
+        deserialize_with = "de_vector2d_option_f64"
     )]
     pub scale: Vector2D<Option<f64>>,
     #[serde(default)]
     pub opacity: Option<f64>,
     pub ease: Easing,
 }
-impl Event for MoveTrack {}
+impl Event for MoveTrack {
+    fn floor(&self) -> usize {
+        self.floor
+    }
+    fn floor_mut(&mut self) -> &mut usize {
+        &mut self.floor
+    }
+    fn set_floor(&mut self, new_floor: usize) {
+        self.floor = new_floor
+    }
+}
 impl DynamicEvent for MoveTrack {
     fn angle_offset(&self) -> f64 {
         self.angle_offset
@@ -145,7 +179,8 @@ impl DynamicEvent for MoveTrack {
             return Ok(());
         }
         if self.duration == 0.0 {
-            /* x = 1.0; */ y = 1.0;
+            /* x = 1.0; */
+            y = 1.0;
         } else {
             x = (seconds - e_seconds) / spb / self.duration;
             y = self.ease.calc(x);
@@ -181,6 +216,15 @@ impl DynamicEvent for MoveTrack {
         }
         Ok(())
     }
+    fn has_event_tag() -> bool {
+        true
+    }
+    fn event_tag(&self) -> Option<&Vec<String>> {
+        Some(&self.event_tag)
+    }
+    fn event_tag_mut(&mut self) -> Option<&mut Vec<String>> {
+        Some(&mut self.event_tag)
+    }
 }
 
 const fn relative_to_default() -> RelativeIndex {
@@ -193,24 +237,35 @@ const fn relative_to_default() -> RelativeIndex {
 #[derive(Debug, Clone, Copy, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct PositionTrack {
+    pub floor: usize,
     #[serde(
         default,
-        serialize_with = "serialize_vector2d_f64",
-        deserialize_with = "deserialize_vector2d_f64"
+        serialize_with = "ser_vector2d_f64",
+        deserialize_with = "de_vector2d_f64"
     )]
     pub position_offset: Vector2D<f64>,
     #[serde(default = "relative_to_default")]
     pub relative_to: RelativeIndex,
     #[serde(default)]
     pub scale: f64,
-    #[serde(default, deserialize_with = "deserialize_bool")]
+    #[serde(default, deserialize_with = "de_bool")]
     pub just_this_tile: bool,
-    #[serde(deserialize_with = "deserialize_bool")]
+    #[serde(deserialize_with = "de_bool")]
     pub editor_only: bool,
-    #[serde(default, deserialize_with = "deserialize_bool")]
+    #[serde(default, deserialize_with = "de_bool")]
     pub stick_to_floors: bool,
 }
-impl Event for PositionTrack {}
+impl Event for PositionTrack {
+    fn floor(&self) -> usize {
+        self.floor
+    }
+    fn floor_mut(&mut self) -> &mut usize {
+        &mut self.floor
+    }
+    fn set_floor(&mut self, new_floor: usize) {
+        self.floor = new_floor
+    }
+}
 impl StaticEvent for PositionTrack {
     fn apply(&self, _data: &mut TileData) {}
 }

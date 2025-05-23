@@ -176,8 +176,8 @@ impl Level {
                         beats = e_beats.unwrap() + set_speed.angle_offset / 180.0;
                         seconds = self.beats2seconds(e_beats.unwrap()).unwrap();
                     } else {
-                        let bpm = self.get_bpm_until(|ss, ss_floor, _, _| {
-                            floor < ss_floor || dynamic_event.angle_offset() < ss.angle_offset
+                        let bpm = self.get_bpm_until(|ss, _, _| {
+                            floor < ss.floor || dynamic_event.angle_offset() < ss.angle_offset
                         })?;
                         let spb = bpm2crotchet(bpm);
                         seconds = self.tiles[floor].data.seconds.unwrap()
@@ -212,13 +212,7 @@ impl Level {
             false
         }
         for re_data in repeat_events {
-            let EventData::Dynamic {
-                event: re_dyn,
-                floor: re_floor,
-                tags: Some(re_tags),
-                ..
-            } = re_data
-            else {
+            let EventData::Dynamic { event: re_dyn, .. } = re_data else {
                 unreachable!()
             };
             let DynamicEvents::RepeatEvents(re) = re_dyn else {
@@ -226,30 +220,28 @@ impl Level {
             };
             match re.repeat_type {
                 RepeatType::Beat => {
-                    for event_data in &self.tiles[re_floor].events {
+                    for event_data in &self.tiles[re.floor].events {
                         let EventData::Dynamic {
                             event,
-                            floor,
                             seconds: Some(seconds),
-                            tags: Some(tags),
                             ..
                         } = event_data
                         else {
                             continue;
                         };
-                        if !match_tag(&re_tags, tags) {
+                        if !event.self_has_event_tag()
+                            || !match_tag(&re.tag, event.event_tag().unwrap())
+                        {
                             continue;
                         }
-                        let spb = self.get_bpm_by_floor_seconds(*floor, *seconds)?;
+                        let spb = self.get_bpm_by_floor_seconds(event.floor(), *seconds)?;
                         for i in 1..=(re.repetitions + 1) {
                             let new_seconds = seconds + i as f64 * re.interval * spb;
                             let new_beats = self.seconds2beats(new_seconds)?;
                             self.dynamic_events.push(EventData::Dynamic {
                                 event: event.clone(),
-                                floor: *floor,
                                 beats: Some(new_beats),
                                 seconds: Some(new_seconds),
-                                tags: Some(tags.clone()),
                             });
                         }
                     }
@@ -258,35 +250,33 @@ impl Level {
                     let Some(floor_count) = re.floor_count else {
                         unreachable!()
                     };
-                    for event_data in &self.tiles[re_floor].events {
-                        let EventData::Dynamic {
-                            event,
-                            floor,
-                            tags: Some(tags),
-                            ..
-                        } = event_data
-                        else {
+                    for event_data in &self.tiles[re.floor].events {
+                        let EventData::Dynamic { event, .. } = event_data else {
                             continue;
                         };
-                        if !match_tag(&re_tags, tags) {
+                        if !event.self_has_event_tag()
+                            || !match_tag(&re.tag, event.event_tag().unwrap())
+                        {
                             continue;
                         }
-                        let bpm = self.get_bpm_until(|ss, ss_floor, _, _| {
-                            *floor < ss_floor || event.angle_offset() < ss.angle_offset
+                        let bpm = self.get_bpm_until(|ss, _, _| {
+                            event.floor() < ss.floor || event.angle_offset() < ss.angle_offset
                         })?;
                         let spb = bpm2crotchet(bpm);
                         let offset = event.angle_offset() / 180.0 * spb;
-                
+
                         for i in 1..=(floor_count + 1) {
-                            let new_floor = *floor + i as usize;
+                            let new_floor = event.floor() + i as usize;
                             let new_seconds = self.tiles[new_floor].data.seconds.unwrap() + offset;
                             let new_beats = self.seconds2beats(new_seconds)?;
+                            let mut new_event = event.clone();
+                            if re.execute_on_current_floor {
+                                new_event.set_floor(new_floor)
+                            };
                             self.dynamic_events.push(EventData::Dynamic {
-                                event: event.clone(),
-                                floor: if re.execute_on_current_floor {new_floor} else {*floor},
+                                event: new_event,
                                 beats: Some(new_beats),
                                 seconds: Some(new_seconds),
-                                tags: Some(tags.clone()),
                             });
                         }
                     }

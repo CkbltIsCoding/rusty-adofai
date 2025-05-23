@@ -16,10 +16,8 @@ impl Level {
         for i in 0..self.dynamic_events.len() {
             let EventData::Dynamic {
                 event,
-                floor,
                 beats,
                 seconds: e_seconds,
-                tags: _tag,
             } = &self.dynamic_events[i]
             else {
                 unreachable!()
@@ -27,7 +25,7 @@ impl Level {
             let _ = event
                 .clone()
                 .apply(
-                    (*floor, beats.unwrap(), e_seconds.unwrap(), None),
+                    (event.floor(), beats.unwrap(), e_seconds.unwrap(), None),
                     self,
                     seconds,
                 )
@@ -93,17 +91,16 @@ impl Level {
         } else {
             0.0
         };
-        let mut plp = 0;
-        for event in self.dynamic_events.clone().iter().enumerate() {
+        // let mut plp = 0;
+        for p in self.dynamic_events.clone().iter().enumerate() {
             let (
                 index,
                 EventData::Dynamic {
                     event: dynamic_event,
-                    floor: e_floor,
                     seconds: Some(e_seconds),
                     ..
                 },
-            ) = &event
+            ) = &p
             else {
                 continue;
             };
@@ -112,7 +109,7 @@ impl Level {
             };
 
             // let bpm = self.get_bpm_by_seconds(e_seconds)?;
-            let bpm = self.get_bpm_by_floor_seconds(*e_floor, *e_seconds)?;
+            let bpm = self.get_bpm_by_floor_seconds(dynamic_event.floor(), *e_seconds)?;
             let spb = bpm2crotchet(bpm);
 
             if seconds < *e_seconds {
@@ -127,7 +124,7 @@ impl Level {
             if let Some(rel_to) = move_camera.relative_to {
                 match rel_to {
                     Tile | Global => {
-                        let f = if matches!(rel_to, Tile) { *e_floor } else { 0 };
+                        let f = if matches!(rel_to, Tile) { dynamic_event.floor() } else { 0 };
                         let tile = &self.tiles[f];
                         rel_to_player += (0.0 - rel_to_player) * y;
                         if matches!(last_rel_to, Player) {

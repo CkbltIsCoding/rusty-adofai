@@ -1,13 +1,26 @@
 use crate::*;
 use event::*;
-use serde::{Deserialize, Deserializer, Serialize, Serializer};
+use serde::{ser::{SerializeMap, SerializeSeq}, Deserialize, Deserializer, Serialize, Serializer};
 
 impl Serialize for Level {
-    fn serialize<S>(&self, _serializer: S) -> Result<S::Ok, S::Error>
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: Serializer,
     {
         todo!()
+        // let mut map = serializer.serialize_map(Some(3))?;
+        // let mut angle_data = vec![];
+        // let mut actions = vec![];
+        // for tile in &self.tiles {
+        //     angle_data.push(tile.angle);
+        //     for event in &tile.events {
+        //         actions.push(event.clone());
+        //     }
+        // }
+        // map.serialize_entry("angleData", &angle_data);
+        // map.serialize_entry("settings", &self.settings);
+        // map.serialize_entry("actions", &actions);
+        // map.end()
     }
 }
 impl<'de> Deserialize<'de> for Level {
@@ -49,26 +62,14 @@ impl<'de> Deserialize<'de> for Level {
             let object = data.as_object().ok_or(e::custom(""))?;
             let floor = object["floor"].as_u64().ok_or(e::custom(""))? as usize;
             let result: Result<Events, _> = serde_json_lenient::from_value(data.clone());
-            let event_tag = if object.contains_key("eventTag") {
-                Some(object["eventTag"].as_str().unwrap())
-            } else {
-                None
-            };
-            let tags: Option<Vec<String>> = if let Some(event_tag) = event_tag {
-                Some(event_tag.split_whitespace().map(|s| s.to_string()).collect())
-            } else {
-                None
-            };
             match result {
                 Ok(event) => {
                     tiles[floor].events.push(match event {
-                        Events::Static(event) => EventData::Static { event, floor },
+                        Events::Static(event) => EventData::Static { event },
                         Events::Dynamic(event) => EventData::Dynamic {
                             event,
-                            floor,
                             beats: None,
                             seconds: None,
-                            tags,
                         },
                     });
                 }

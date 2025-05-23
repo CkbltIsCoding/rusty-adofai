@@ -113,7 +113,7 @@ pub struct Settings {
     pub artist: String,
     pub song: String,
     pub author: String,
-    #[serde(deserialize_with = "deserialize_bool")]
+    #[serde(deserialize_with = "de_bool")]
     pub separate_countdown_time: bool,
     pub song_filename: String,
     pub bpm: f64,
@@ -122,18 +122,18 @@ pub struct Settings {
     pub pitch: f64,
     #[serde(default)]
     pub countdown_ticks: u32,
-    #[serde(deserialize_with = "deserialize_bool")]
+    #[serde(deserialize_with = "de_bool")]
     pub stick_to_floors: bool,
 
     pub track_color_type: TrackColorType,
     #[serde(
-        serialize_with = "serialize_rgba_u8",
-        deserialize_with = "deserialize_rgba_u8"
+        serialize_with = "ser_rgba_u8",
+        deserialize_with = "de_rgba_u8"
     )]
     pub track_color: Rgba<u8>,
     #[serde(
-        serialize_with = "serialize_rgba_u8",
-        deserialize_with = "deserialize_rgba_u8"
+        serialize_with = "ser_rgba_u8",
+        deserialize_with = "de_rgba_u8"
     )]
     pub secondary_track_color: Rgba<u8>,
     pub track_color_anim_duration: f64,
@@ -151,15 +151,15 @@ pub struct Settings {
     pub track_disappear_animation: TrackDisappearAnimation,
     pub beats_behind: f64,
     #[serde(
-        serialize_with = "serialize_rgba_u8",
-        deserialize_with = "deserialize_rgba_u8"
+        serialize_with = "ser_rgba_u8",
+        deserialize_with = "de_rgba_u8"
     )]
     pub background_color: Rgba<u8>,
 
     #[serde(
         default,
-        serialize_with = "serialize_vector2d_f64",
-        deserialize_with = "deserialize_vector2d_f64"
+        serialize_with = "ser_vector2d_f64",
+        deserialize_with = "de_vector2d_f64"
     )]
     pub position: Vector2D<f64>,
     pub rotation: f64,
@@ -300,7 +300,7 @@ impl Level {
     }
     pub fn get_bpm_until<F>(&self, function: F) -> Result<f64, Box<dyn error::Error>>
     where
-        F: Fn(SetSpeed, usize, Option<f64>, Option<f64>) -> bool,
+        F: Fn(SetSpeed, Option<f64>, Option<f64>) -> bool,
     {
         if !self.parsed {
             return Err(Box::new(LevelIsNotParsedError {
@@ -312,13 +312,12 @@ impl Level {
             for event in &tile.events {
                 if let EventData::Dynamic {
                     event: DynamicEvents::SetSpeed(set_speed),
-                    floor: ss_floor,
                     beats: ss_beats,
                     seconds: ss_seconds,
                     ..
                 } = *event
                 {
-                    if function(set_speed, ss_floor, ss_beats, ss_seconds) {
+                    if function(set_speed, ss_beats, ss_seconds) {
                         break 'tile_loop;
                     }
                     bpm = set_speed.get_bpm(bpm);
@@ -414,12 +413,11 @@ impl Level {
             for event in &tile.events {
                 if let EventData::Dynamic {
                     event: DynamicEvents::SetSpeed(set_speed),
-                    floor: ss_floor,
                     seconds: ss_seconds,
                     ..
                 } = *event
                 {
-                    if floor < ss_floor || seconds < ss_seconds.ok_or(DynamicValueEmptyError)? {
+                    if floor < set_speed.floor || seconds < ss_seconds.ok_or(DynamicValueEmptyError)? {
                         break 'tile_loop;
                     }
                     bpm = set_speed.get_bpm(bpm);

@@ -24,7 +24,6 @@ pub mod event;
 mod easing;
 pub use easing::*;
 
-
 mod serde_func;
 use serde_func::*;
 

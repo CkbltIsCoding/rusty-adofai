@@ -5,6 +5,7 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Clone, Copy, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SetSpeed {
+    pub floor: usize,
     #[serde(default)]
     pub speed_type: SpeedType,
     pub beats_per_minute: f64,
@@ -21,15 +22,37 @@ impl SetSpeed {
         }
     }
 }
-impl Event for SetSpeed {}
+impl Event for SetSpeed {
+        fn floor(&self) -> usize {
+        self.floor
+    }
+    fn floor_mut(&mut self) -> &mut usize {
+        &mut self.floor
+    }
+    fn set_floor(&mut self, new_floor: usize) {
+        self.floor = new_floor
+    }
+}
 impl DynamicEvent for SetSpeed {
     fn apply(
-        &self, _data: (usize, f64, f64, Option<Vec<String>>), _level: &mut Level, _seconds: f64
+        &self,
+        _data: (usize, f64, f64, Option<Vec<String>>),
+        _level: &mut Level,
+        _seconds: f64,
     ) -> Result<(), Box<dyn error::Error>> {
         Ok(())
     }
     fn angle_offset(&self) -> f64 {
         self.angle_offset
+    }
+    fn has_event_tag() -> bool {
+        false
+    }
+    fn event_tag(&self) -> Option<&Vec<String>> {
+        None
+    }
+    fn event_tag_mut(&mut self) -> Option<&mut Vec<String>> {
+        None
     }
 }
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, Default)]
@@ -40,8 +63,20 @@ pub enum SpeedType {
 }
 #[derive(Debug, Clone, Copy, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct Twirl {}
-impl Event for Twirl {}
+pub struct Twirl {
+    pub floor: usize,
+}
+impl Event for Twirl {
+    fn floor(&self) -> usize {
+        self.floor
+    }
+    fn floor_mut(&mut self) -> &mut usize {
+        &mut self.floor
+    }
+    fn set_floor(&mut self, new_floor: usize) {
+        self.floor = new_floor
+    }
+}
 impl StaticEvent for Twirl {
     fn apply(&self, data: &mut TileData) {
         data.orbit = Some(data.orbit.unwrap().opposite());
@@ -51,11 +86,22 @@ impl StaticEvent for Twirl {
 #[derive(Debug, Clone, Copy, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Pause {
+    pub floor: usize,
     pub duration: f64,
     pub countdown_ticks: f64,
     pub angle_correction_dir: AngleCorrectionDir,
 }
-impl Event for Pause {}
+impl Event for Pause {
+    fn floor(&self) -> usize {
+        self.floor
+    }
+    fn floor_mut(&mut self) -> &mut usize {
+        &mut self.floor
+    }
+    fn set_floor(&mut self, new_floor: usize) {
+        self.floor = new_floor
+    }
+}
 impl StaticEvent for Pause {
     fn apply(&self, data: &mut TileData) {
         data.pause_duration = Some(self.duration);
@@ -70,11 +116,21 @@ pub enum GameSound {
 #[derive(Debug, Clone, Copy, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct SetHitsound {
+    pub floor: usize,
     pub game_sound: GameSound,
     pub hitsound: Hitsound,
     pub hitsound_volume: f64,
 }
 impl Event for SetHitsound {
+    fn floor(&self) -> usize {
+        self.floor
+    }
+    fn floor_mut(&mut self) -> &mut usize {
+        &mut self.floor
+    }
+    fn set_floor(&mut self, new_floor: usize) {
+        self.floor = new_floor
+    }
 }
 impl StaticEvent for SetHitsound {
     fn apply(&self, data: &mut TileData) {
